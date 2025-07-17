@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Produtos</title>
+</head>
+<body>
+    <h1>Lista de Produtos</h1>
+    {{range .Products}}
+    <div style="margin-bottom: 20px;">
+        <div><img src="{{.Image}}"></div>
+        <div><strong>{{.Name}}</strong></div>
+        <div><strong>Marca: {{.Brand}} </strong></div>
+        <div><strong>GTIN: {{.Barcode}}</strong></div>
+        <div><strong>Preço: R$ {{formatPrice .Price}}</strong></div>
+    </div>
+    {{end}}
+</body>
+</html>
