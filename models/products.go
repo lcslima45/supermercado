@@ -15,6 +15,18 @@ type Product struct {
 	Brand   string `json:"brand"`
 }
 
+type Data struct {
+	Data []ProductsVipcommerce `json:"data"`
+}
+
+type ProductsVipcommerce struct {
+	Descricao    string `json:"descricao"`
+	Preco        string `json:"preco"`
+	Imagem       string `json:"imagem"`
+	CodigoBarras string `json:"codigo_barras"`
+	Marca        string `json:"marca"`
+}
+
 type Price struct {
 	PriceID   int    `json:"id"`
 	ProductID int    `json:"productId"`

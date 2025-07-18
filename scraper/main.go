@@ -5,21 +5,10 @@ import (
 	"log"
 	"os"
 	"strings"
+	"supermercado/models"
 
 	"github.com/gocolly/colly"
 )
-
-type Data struct {
-	Data []Products `json:"data"`
-}
-
-type Products struct {
-	Descricao    string `json:"descricao"`
-	Preco        string `json:"preco"`
-	Imagem       string `json:"imagem"`
-	CodigoBarras string `json:"codigo_barras"`
-	Marca        string `json:"marca"`
-}
 
 func TreatImage(imageUrl string) string {
 	return "https://produtos.vipcommerce.com.br/250x250/" + imageUrl
@@ -29,14 +18,14 @@ func TreatPrice(price string) string {
 	return strings.ReplaceAll(price, ".", "")
 }
 
-func TreatData(dat *Data) {
+func TreatData(dat *models.Data) {
 	for i := range dat.Data {
 		dat.Data[i].Preco = TreatPrice(dat.Data[i].Preco)
 		dat.Data[i].Imagem = TreatImage(dat.Data[i].Imagem)
 	}
 }
 
-func SaveData(dat Data) {
+func SaveData(dat models.Data) {
 	file, _ := os.Create("products.json")
 	defer file.Close()
 	encoder := json.NewEncoder(file)
@@ -57,7 +46,7 @@ func main() {
 		r.Headers.Set("Organizationid", "180")
 	})
 
-	var result Data
+	var result models.Data
 	c.OnResponse(func(r *colly.Response) {
 		err := json.Unmarshal(r.Body, &result)
 		if err != nil {

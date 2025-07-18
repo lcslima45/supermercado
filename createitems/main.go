@@ -2,9 +2,11 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"supermercado/models"
 	"text/template"
 
@@ -39,14 +41,6 @@ func main() {
 	}
 
 	sqlStatement = `
-	INSERT INTO products(name, barcode, image, brand) VALUES ("coca cola", "7894900709841", "https://cdn-cosmos.bluesoft.com.br/products/7894900709841", "coca-cola")
-	`
-	_, err = db.Exec(sqlStatement)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	sqlStatement = `
 	DROP TABLE IF EXISTS prices;
 	CREATE TABLE prices (
 		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -61,6 +55,48 @@ func main() {
 		log.Fatal(err)
 	}
 
+	file, _ := os.ReadFile("../scraper/products.json")
+
+	var data models.Data
+
+	err = json.Unmarshal(file, &data)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, p := range data.Data {
+		sqlStatement := fmt.Sprintf(`
+		INSERT INTO products(name, barcode, image, brand)
+		VALUES ("%s", "%s", "%s", "%s");`,
+			p.Descricao,
+			p.CodigoBarras,
+			p.Imagem,
+			p.Marca,
+		)
+		result, err := db.Exec(sqlStatement)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		lastId, err := result.LastInsertId()
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		sqlStatement = fmt.Sprintf(`
+		INSERT INTO prices(productId, price, createdAt)
+		VALUES (%d, %s, DATETIME('now'));`,
+			lastId,
+			p.Preco, // já está em centavos como string: "949"
+		)
+
+		_, err = db.Exec(sqlStatement)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 	sqlStatement = `
 	INSERT INTO prices(productId, price, createdAt) 
 	VALUES (1, 630, DATETIME('now'));
